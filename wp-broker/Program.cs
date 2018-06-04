@@ -76,15 +76,19 @@ namespace wpbroker
                 Console.WriteLine(parameters[s]);
             }
 
-
 			Console.WriteLine("**************************************************");
 			Console.WriteLine("* CHECKING                                       *");
 			Console.WriteLine("**************************************************");
 
 			if(parameters.ContainsKey(PARAM_VERIFY)){
 				Checker chk = new Checker(parameters[PARAM_WEB].Value);
-				Console.WriteLine(chk.Check(Checker.CMS.WORDPRESS));
+				IEnumerator<Conclusion> conclusions = chk.Check(Checker.CMS.WORDPRESS);
+				while(conclusions.MoveNext()){
+					Conclusion conclusion = (Conclusion)conclusions.Current;
+					Console.WriteLine(conclusion);
+				}
 			}
+
         }
 
     }

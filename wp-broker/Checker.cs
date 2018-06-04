@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
 
@@ -6,6 +7,9 @@ namespace wpbroker
 {
     public class Checker
     {
+		/***********************************************************************************
+         * ENUMERATIONS
+         ***********************************************************************************/
 		public enum CMS
 		{
             WORDPRESS, 
@@ -13,39 +17,40 @@ namespace wpbroker
             DRUPAL
 		}
 
-		public class Conclusion
-		{
-            private bool _includeName;
-			private bool _includeContentFolder;
-
-			public Conclusion(bool includeName) {
-				_includeName = includeName;
-			}
-
-			public Conclusion(bool includeName, bool includeContentFolder) : this (includeName){
-				_includeContentFolder = includeContentFolder;
-			}
-
-			public override string ToString()
-			{
-				return  "Include Name                        : " + _includeName + "\n" +
-					    "Include Content Folder (wp-content) : " + _includeContentFolder + "";
-			}
-		}
-			
-
-		private const string WP_PATTERN = "(W|w)ordpress";
-		private const string CONTENT_FOLDER_PATTERN = "wp-content";
-
-		private string _webSite;
+		/***********************************************************************************
+         * CONSTANTS 
+         ***********************************************************************************
+         * TEXT */
+		private const string TEXT_INCLUDE_WP_NAME = "Include Name";
+		private const string TEXT_INCLUDE_WP_FOLDER = "Include Content Folder (wp-content)";
+		private const string TEXT_HAS_LICENSE_FILE = "Has License file";
         
+		/* PATTERNS */
+		private const string PATTERN_WP = "(W|w)(o|O)(r|R)(d|D)(p|P)(r|R)(e|E)(s|S)(s|S)";
+		private const string PATTERN_CONTENT_FOLDER = "wp-content";
+
+        /* OTHER */
+		private const string LICENSE_FILE = "/license.txt";
+
+		/***********************************************************************************
+         * ATTRIBUTES
+         ***********************************************************************************/        
+		private string _webSite;
+		private List<Conclusion> _conclusions;
+        
+		/***********************************************************************************
+         * CONSTRUCTORS
+         ***********************************************************************************/
         public Checker(string webSite)
         {
 			_webSite = webSite;
+			_conclusions = new List<Conclusion>();
         }
 
-
-		public Conclusion Check(CMS toValidate)
+		/***********************************************************************************
+         * PUBLIC METHODS 
+         ***********************************************************************************/
+		public IEnumerator<Conclusion> Check(CMS toValidate)
 		{
 			if(toValidate == CMS.WORDPRESS){
 				return CheckIsWordpress();
@@ -58,24 +63,29 @@ namespace wpbroker
 			}
 		}
 
-		private Conclusion CheckIsWordpress() {
+        /***********************************************************************************
+		* PRIVATE METHODS 
+         ***********************************************************************************/
+		private IEnumerator<Conclusion> CheckIsWordpress() {
 			         
 	        WebClient client = new WebClient();
             
-			Regex hasWpString = new Regex(WP_PATTERN);
-			Regex hasContentFolder = new Regex(CONTENT_FOLDER_PATTERN);
-                     
 			string downloadString = client.DownloadString(_webSite);
-                    
-			return new Conclusion(
-				hasWpString.IsMatch(downloadString), 
-				hasContentFolder.IsMatch(downloadString)
-			);
+			Regex hasWpString = new Regex(PATTERN_WP);
+			Regex hasContentFolder = new Regex(PATTERN_CONTENT_FOLDER);
+
+			string licenseFile = client.DownloadString(_webSite + LICENSE_FILE);
+         
+			_conclusions.Add(new Conclusion(TEXT_INCLUDE_WP_NAME, hasWpString.IsMatch(downloadString)));
+			_conclusions.Add(new Conclusion(TEXT_INCLUDE_WP_FOLDER, hasContentFolder.IsMatch(downloadString)));
+			_conclusions.Add(new Conclusion(TEXT_HAS_LICENSE_FILE, hasWpString.IsMatch(licenseFile)));
+         
+			return _conclusions.GetEnumerator();
 		}
 
-		private Conclusion CheckIsDrupal() { return new Conclusion(false); }
+		private IEnumerator<Conclusion> CheckIsDrupal() { return _conclusions.GetEnumerator(); }
 
-		private Conclusion CheckIsPrestashop() { return new Conclusion(false); }
+		private IEnumerator<Conclusion> CheckIsPrestashop() { return _conclusions.GetEnumerator(); }
 
 
     }
