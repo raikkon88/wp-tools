@@ -50,20 +50,26 @@ namespace wpbroker
          ***********************************************************************************/        
 		private string _webSite;
 		private List<Conclusion> _conclusions;
-        
-		/***********************************************************************************
+        private List<Func<string, bool>> _verifications;
+
+        /***********************************************************************************
          * CONSTRUCTORS
          ***********************************************************************************/
         public Checker(string webSite)
         {
-			_webSite = webSite;
-			_conclusions = new List<Conclusion>();
+            _webSite = webSite;
+            _conclusions = new List<Conclusion>();
+            _verifications = new List<Func<string, bool>>();
+
+            InitializeVerifications();
         }
 
-		/***********************************************************************************
+
+
+        /***********************************************************************************
          * PUBLIC METHODS 
          ***********************************************************************************/
-		public IEnumerator<Conclusion> Check(CMS toValidate)
+        public IEnumerator<Conclusion> Check(CMS toValidate)
 		{
 			if(toValidate == CMS.WORDPRESS){
 				return CheckIsWordpress();
@@ -91,7 +97,7 @@ namespace wpbroker
             // Verify the license file
 			string licenseFile = client.DownloadString(_webSite + PATH_LICENSE_FILE);
 
-			GenerateConclusion(TEXT_INCLUDE_WP_NAME, hasWpString.IsMatch(downloadString));
+            GenerateConclusion(TEXT_INCLUDE_WP_NAME, hasWpString.IsMatch(downloadString));
 			GenerateConclusion(TEXT_INCLUDE_WP_FOLDER, hasContentFolder.IsMatch(downloadString));
 			GenerateConclusion(TEXT_HAS_LICENSE_FILE, hasWpString.IsMatch(licenseFile));
 			GenerateConclusion(TEXT_CONTENT_FOLDER_ACCESSIBLE, IsHttpRequest200(_webSite + PATH_WP_CONTENT_FOLDER, HTTP_REQUEST_TIMEOUT));
@@ -101,6 +107,7 @@ namespace wpbroker
 
 			return _conclusions.GetEnumerator();
 		}
+
 
 		private void GenerateConclusion(string text, bool result){
 			Conclusion conclusion = new Conclusion(text, result);
@@ -128,6 +135,29 @@ namespace wpbroker
 
 		private IEnumerator<Conclusion> CheckIsPrestashop() { return _conclusions.GetEnumerator(); }
 
+
+        /**
+         Console.WriteLine("Hello World!");
+
+            Func<double, double> func = Math.Sin;
+            Console.WriteLine(func(3));
+
+            Regex expression = new Regex("PATTERN");
+            Regex expression2 = new Regex("PATTERNAL");
+            Func<string, bool> regexFunc = expression.IsMatch;
+
+
+            List<Func<string, bool>> regexList = new List<Func<string, bool>>();
+
+            regexList.Add(regexFunc);
+            regexList.Add(expression2.IsMatch);
+
+            string str = "PATTERNALISTA";
+
+            foreach(Func<string, bool> function in regexList){
+                Console.WriteLine(function(str));
+            } 
+         */
 
     }
 }
