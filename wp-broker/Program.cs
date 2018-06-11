@@ -80,9 +80,10 @@ namespace wpbroker
             foreach (string s in parameters.Keys)
             {
                 Console.WriteLine("----------------------------------");
+				Console.WriteLine("- PARAMETERS ");
                 Console.WriteLine(parameters[s]);
+				Console.WriteLine("----------------------------------");
             }
-
 
             Console.WriteLine("**************************************************");
             Console.WriteLine("* CHECKING                                       *");
