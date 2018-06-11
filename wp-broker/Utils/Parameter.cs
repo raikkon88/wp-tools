@@ -1,7 +1,8 @@
-﻿using System;
+﻿using System.Collections.Generic;
+
 namespace wpbroker
 {
-    public class Parameter
+    public class Parameter 
     {
 
 		// Attributes ---------------------------------------------------------------------------------
@@ -64,6 +65,25 @@ namespace wpbroker
 		}
 
 		// Public Methods ---------------------------------------------------------------------------------
+        /**
+         * Verifies all the parameters inside the parameters structure
+         * All paramters will be active and will has value if is needed
+         */
+        public static bool HasWrongParameters(IEnumerator<Parameter> parameters)
+        {
+
+            while (parameters.MoveNext())
+            {
+                Parameter param = parameters.Current;
+                if (param.Active && param.NeedsValue && param.Value == null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
 
 		// Private Methods ---------------------------------------------------------------------------------
 
@@ -75,7 +95,6 @@ namespace wpbroker
 				   "ACTIVE         : " + _active  + "\n" + 
 				   "REQUIRED VALUE : " + _needsValue;
         }
-
 
 
     }
